@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>osu! mania Web - Circular Style</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Background / Game Canvas -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- UI Overlay Layer -->
+    <div id="ui-container">
+
+        <!-- Lobby / Song Selection Screen -->
+        <div id="lobby-screen" class="lobby-screen interactive">
+            <div class="logo-container">
+                <div class="logo-title">OSU! MANIA</div>
+                <div class="logo-sub">Circular Minimalist Edition • 4K / 7K</div>
+            </div>
+
+            <!-- Drag & Drop Zone -->
+            <div id="drop-zone" class="dropzone-card">
+                <div class="dropzone-icon">📁</div>
+                <div class="dropzone-title">Drop your .osz or .osu file here</div>
+                <div class="dropzone-hint">Supports beatmap packs (.osz) or individual .osu + audio files</div>
+                <input type="file" id="file-input" accept=".osz,.osu,.mp3,.ogg,.wav" multiple style="display: none;">
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="button-group">
+                <button id="btn-play-7k" class="btn btn-primary">
+                    <span>▶</span> Play 7K Demo (Reference Style)
+                </button>
+                <button id="btn-play-4k" class="btn btn-secondary">
+                    <span>▶</span> Play 4K Demo
+                </button>
+                <button id="btn-browse" class="btn btn-secondary">
+                    <span>📂</span> Choose File...
+                </button>
+                <button id="btn-settings" class="btn btn-secondary">
+                    <span>⚙</span> Settings
+                </button>
+            </div>
+        </div>
+
+        <!-- In-game Pause Overlay -->
+        <div id="pause-overlay" class="pause-overlay">
+            <div class="pause-title">PAUSED</div>
+            <div class="pause-buttons">
+                <button id="btn-pause-resume" class="btn btn-primary">Continue</button>
+                <button id="btn-pause-retry" class="btn btn-secondary">Retry</button>
+                <button id="btn-pause-quit" class="btn btn-secondary">Back to Menu</button>
+            </div>
+        </div>
+
+        <!-- Results Modal Screen -->
+        <div id="results-modal" class="modal-overlay">
+            <div class="modal-box result-box">
+                <div id="result-grade" class="result-grade grade-SS">SS</div>
+                <div id="result-score" class="result-score">0000000</div>
+
+                <div class="result-stats-grid">
+                    <div class="stat-item">
+                        <span id="stat-acc" class="stat-num">100.00%</span>
+                        <span class="stat-label">Accuracy</span>
+                    </div>
+                    <div class="stat-item">
+                        <span id="stat-combo" class="stat-num">0x</span>
+                        <span class="stat-label">Max Combo</span>
+                    </div>
+                    <div class="stat-item">
+                        <span id="stat-marvelous" class="stat-num" style="color: #70e0ff;">0</span>
+                        <span class="stat-label">Marvelous</span>
+                    </div>
+                    <div class="stat-item">
+                        <span id="stat-perfect" class="stat-num" style="color: #ffd700;">0</span>
+                        <span class="stat-label">Perfect</span>
+                    </div>
+                    <div class="stat-item">
+                        <span id="stat-great" class="stat-num" style="color: #70ff90;">0</span>
+                        <span class="stat-label">Great</span>
+                    </div>
+                    <div class="stat-item">
+                        <span id="stat-good" class="stat-num" style="color: #64b5f6;">0</span>
+                        <span class="stat-label">Good</span>
+                    </div>
+                    <div class="stat-item">
+                        <span id="stat-bad" class="stat-num" style="color: #ba68c8;">0</span>
+                        <span class="stat-label">Bad</span>
+                    </div>
+                    <div class="stat-item">
+                        <span id="stat-miss" class="stat-num" style="color: #ef5350;">0</span>
+                        <span class="stat-label">Miss</span>
+                    </div>
+                </div>
+
+                <div class="button-group" style="width: 100%;">
+                    <button id="btn-result-retry" class="btn btn-primary" style="flex: 1;">Retry</button>
+                    <button id="btn-result-menu" class="btn btn-secondary" style="flex: 1;">Song Select</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Difficulty Selection Modal (for .osz packs) -->
+        <div id="diff-modal" class="modal-overlay">
+            <div class="modal-box">
+                <div class="modal-header">
+                    <div class="modal-title">Select Difficulty</div>
+                    <button id="btn-close-diff" class="close-btn">&times;</button>
+                </div>
+                <div id="diff-list" class="diff-list">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div id="settings-modal" class="modal-overlay">
+            <div class="modal-box">
+                <div class="modal-header">
+                    <div class="modal-title">Game Settings</div>
+                    <button id="btn-close-settings" class="close-btn">&times;</button>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-label">
+                        <span>Scroll Speed</span>
+                        <span id="val-scroll-speed">24</span>
+                    </div>
+                    <input type="range" id="setting-scroll-speed" class="setting-slider" min="14" max="36" value="24" step="1">
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-label">
+                        <span>Background Dim</span>
+                        <span id="val-bg-dim">65%</span>
+                    </div>
+                    <input type="range" id="setting-bg-dim" class="setting-slider" min="0" max="100" value="65" step="5">
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-label">
+                        <span>Audio Offset</span>
+                        <span id="val-audio-offset">0 ms</span>
+                    </div>
+                    <input type="range" id="setting-audio-offset" class="setting-slider" min="-150" max="150" value="0" step="5">
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-label">
+                        <span>Music Volume</span>
+                        <span id="val-music-vol">80%</span>
+                    </div>
+                    <input type="range" id="setting-music-vol" class="setting-slider" min="0" max="100" value="80" step="5">
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-label">
+                        <span>Hitsound Volume</span>
+                        <span id="val-hitsound-vol">60%</span>
+                    </div>
+                    <input type="range" id="setting-hitsound-vol" class="setting-slider" min="0" max="100" value="60" step="5">
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-label">
+                        <span>Keybinds (Default)</span>
+                    </div>
+                    <div style="font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 4px;">4K Layout:</div>
+                    <div class="keybind-grid">
+                        <span class="keybind-chip">D</span>
+                        <span class="keybind-chip">F</span>
+                        <span class="keybind-chip">J</span>
+                        <span class="keybind-chip">K</span>
+                    </div>
+                    <div style="font-size: 12px; color: rgba(255,255,255,0.6); margin: 8px 0 4px;">7K Layout:</div>
+                    <div class="keybind-grid">
+                        <span class="keybind-chip">S</span>
+                        <span class="keybind-chip">D</span>
+                        <span class="keybind-chip">F</span>
+                        <span class="keybind-chip">Space</span>
+                        <span class="keybind-chip">J</span>
+                        <span class="keybind-chip">K</span>
+                        <span class="keybind-chip">L</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="jszip.min.js"></script>
+    <script src="audioEngine.js"></script>
+    <script src="osuParser.js"></script>
+    <script src="oszLoader.js"></script>
+    <script src="gameEngine.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
